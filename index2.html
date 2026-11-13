@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" id="meta-theme-color" content="#1e212a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Ultimate Calc">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Sınırsız E-Notasyonlu, Grafik ve Birim Dönüştürücülü Bilimsel Hesap Makinesi">
+  <link rel="manifest" id="pwa-manifest" href="manifest.json">
+  <link rel="apple-touch-icon" id="apple-icon" href="">
+  <title>Ultimate Bilimsel Hesap Makinesi v6.0 PWA</title>
+  <style>
+    :root {
+      --bg-body: #12141a;
+      --bg-calc: #1e212a;
+      --bg-display: #272b36;
+      --bg-btn: #282c37;
+      --bg-btn-hover: #343947;
+      --bg-btn-active: #424859;
+      --bg-panel: #232731;
+      --text-main: #ffffff;
+      --text-muted: #8b92a5;
+      --color-operator: #ff6b6b;
+      --color-action: #26e6a3;
+      --color-sci: #66a3ff;
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+      --btn-radius: 12px;
+      --btn-height: 44px;
+      --grid-gap: 8px;
+      --display-font: 'Consolas', 'Segoe UI', monospace;
+    }
+
+    body.theme-light {
+      --bg-body: #e2e8f0;
+      --bg-calc: #ffffff;
+      --bg-display: #f1f5f9;
+      --bg-btn: #f8fafc;
+      --bg-btn-hover: #e2e8f0;
+      --bg-btn-active: #cbd5e1;
+      --bg-panel: #f8fafc;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --color-operator: #ef4444;
+      --color-action: #059669;
+      --color-sci: #2563eb;
+      --shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    body.theme-oled {
+      --bg-body: #000000;
+      --bg-calc: #070709;
+      --bg-display: #111216;
+      --bg-btn: #121318;
+      --bg-btn-hover: #1f2129;
+      --bg-btn-active: #2c2f3a;
+      --bg-panel: #0c0d10;
+      --text-main: #f8fafc;
+      --text-muted: #64748b;
+      --shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+    }
+
+    body.theme-cyberpunk {
+      --bg-body: #090414;
+      --bg-calc: #140826;
+      --bg-display: #1f0d3d;
+      --bg-btn: #251047;
+      --bg-btn-hover: #351766;
+      --bg-btn-active: #471f87;
+      --bg-panel: #190a30;
+      --text-main: #00f0ff;
+      --text-muted: #b86bff;
+      --color-operator: #ff007f;
+      --color-action: #fcee09;
+      --color-sci: #00f0ff;
+      --shadow: 0 0 35px rgba(255, 0, 127, 0.25);
+    }
+
+    body.theme-matrix {
+      --bg-body: #020804;
+      --bg-calc: #06140b;
+      --bg-display: #0a2212;
+      --bg-btn: #0d2916;
+      --bg-btn-hover: #143d22;
+      --bg-btn-active: #1b522d;
+      --bg-panel: #081c0f;
+      --text-main: #00ff66;
+      --text-muted: #2e8b57;
+      --color-operator: #80ffaa;
+      --color-action: #00ff66;
+      --color-sci: #33cc77;
+      --shadow: 0 0 35px rgba(0, 255, 102, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      transition: background-color 0.25s ease;
+      padding: env(safe-area-inset-top, 12px) 12px env(safe-area-inset-bottom, 12px) 12px;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    .calculator {
+      position: relative;
+      background-color: var(--bg-calc);
+      padding: 18px;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      width: 430px;
+      max-width: 100%;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* PWA Standalone (Tam Ekran Uygulama) Modunda Mobil Uyum */
+    @media (max-width: 480px) and (display-mode: standalone) {
+      body { padding: 0; background-color: var(--bg-calc); }
+      .calculator {
+        width: 100vw;
+        min-height: 100dvh;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: env(safe-area-inset-top, 16px) 16px env(safe-area-inset-bottom, 16px) 16px;
+      }
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .top-bar-group {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: var(--bg-display);
+      color: var(--text-main);
+      border: none;
+      border-radius: 9px;
+      padding: 6px 9px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .icon-btn:hover { background: var(--bg-btn-hover); }
+    .icon-btn.active { color: var(--accent); outline: 1.5px solid var(--accent); }
+
+    #install-pwa-btn {
+      background: var(--accent);
+      color: #ffffff;
+      display: none;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+    .status-dot.offline { background: #f59e0b; }
+
+    .display-container {
+      background-color: var(--bg-display);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      min-height: 116px;
+      transition: background-color 0.25s ease;
+      position: relative;
+    }
+
+    .display-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-group {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      display: none;
+      white-space: nowrap;
+    }
+
+    #mem-badge { background: var(--color-sci); }
+
+    #history {
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      min-height: 1.2rem;
+      flex: 1;
+      text-align: right;
+      white-space: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    #history::-webkit-scrollbar { display: none; }
+
+    .display-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #display {
+      width: 100%;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 1.75rem;
+      font-weight: 700;
+      text-align: right;
+      padding: 4px 0;
+      font-family: var(--display-font);
+      letter-spacing: -0.5px;
+      transition: font-size 0.12s ease;
+    }
+
+    .copy-mini-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .copy-mini-btn:hover { color: var(--text-main); background: var(--bg-btn-hover); }
+
+    #live-preview {
+      color: var(--accent);
+      font-size: 0.86rem;
+      font-weight: 600;
+      min-height: 1.15rem;
+      width: 100%;
+      text-align: right;
+      white-space: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      opacity: 0.92;
+    }
+    #live-preview::-webkit-scrollbar { display: none; }
+
+    .memory-bar {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .memory-bar button {
+      height: 30px;
+      border: none;
+      border-radius: 8px;
+      background: var(--bg-display);
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .memory-bar button:hover { color: var(--text-main); background: var(--bg-btn-hover); }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--grid-gap);
+    }
+
+    .buttons button {
+      height: var(--btn-height);
+      border: none;
+      border-radius: var(--btn-radius);
+      font-size: 0.98rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.12s ease, transform 0.08s ease;
+      background-color: var(--bg-btn);
+      color: var(--text-main);
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .buttons button:hover { background-color: var(--bg-btn-hover); }
+    .buttons button:active { transform: scale(0.94); background-color: var(--bg-btn-active); }
+
+    button.operator { color: var(--color-operator); font-size: 1.15rem; }
+    button.action { color: var(--color-action); }
+    button.sci { color: var(--color-sci); font-size: 0.88rem; }
+    button.second-active { background-color: var(--accent) !important; color: #fff !important; }
+    button.equal {
+      background-color: var(--accent);
+      color: #ffffff;
+      font-size: 1.3rem;
+    }
+    button.equal:hover { background-color: var(--accent-hover); }
+
+    .drawer {
+      position: absolute;
+      inset: 52px 14px 14px 14px;
+      background-color: var(--bg-panel);
+      border-radius: 18px;
+      padding: 15px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      transform: translateY(112%);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+      z-index: 20;
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow-y: auto;
+    }
+
+    .drawer.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(139, 146, 165, 0.2);
+    }
+
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-main);
+      font-size: 0.83rem;
+      gap: 8px;
+    }
+
+    .pwa-box {
+      background: var(--bg-display);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pwa-box-text {
+      font-size: 0.76rem;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    .color-swatches { display: flex; gap: 7px; }
+    .swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s ease;
+    }
+    .swatch.active { border-color: var(--text-main); transform: scale(1.15); }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-item {
+      background: var(--bg-display);
+      padding: 9px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: right;
+      transition: background 0.15s;
+    }
+    .history-item:hover { background: var(--bg-btn-hover); }
+    .history-note { color: var(--accent); font-size: 0.74rem; font-weight: 600; text-align: left; margin-bottom: 2px; }
+    .history-expr { color: var(--text-muted); font-size: 0.78rem; }
+    .history-res { color: var(--text-main); font-size: 1rem; font-weight: 600; }
+
+    .const-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      overflow-y: auto;
+    }
+    .const-card {
+      background: var(--bg-display);
+      padding: 9px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .const-card:hover { border-color: var(--accent); }
+    .const-name { color: var(--text-main); font-size: 0.8rem; font-weight: 700; }
+    .const-val { color: var(--accent); font-size: 0.74rem; font-family: monospace; margin-top: 2px; }
+
+    .base-box {
+      background: var(--bg-display);
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .base-label { color: var(--text-muted); font-size: 0.75rem; font-weight: 700; }
+    .base-val { color: var(--text-main); font-family: monospace; font-size: 0.9rem; word-break: break-all; }
+
+    #graph-canvas {
+      width: 100%;
+      height: 210px;
+      background: var(--bg-display);
+      border-radius: 12px;
+      border: 1px solid rgba(139, 146, 165, 0.2);
+    }
+
+    select, input[type="checkbox"], input[type="number"], input[type="text"] {
+      accent-color: var(--accent);
+      background: var(--bg-display);
+      color: var(--text-main);
+      border: 1px solid rgba(139, 146, 165, 0.3);
+      padding: 5px 8px;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <!-- Üst Araç Çubuğu -->
+    <div class="top-bar">
+      <div class="top-bar-group">
+        <button class="icon-btn" id="angle-btn" title="Açı Birimi">Deg</button>
+        <button class="icon-btn" id="const-btn" title="Sabitler">🔬 Sabit</button>
+        <button class="icon-btn" id="unit-btn" title="Birim Dönüştürücü">🔄 Birim</button>
+        <button class="icon-btn" id="base-btn" title="Taban (HEX/BIN)">💻 Taban</button>
+        <button class="icon-btn" id="graph-btn" title="Grafik Çiz">📈 Grafik</button>
+      </div>
+      <div class="top-bar-group">
+        <button class="icon-btn" id="install-pwa-btn" title="Uygulamayı Ana Ekrana Kur">📲 Kur</button>
+        <button class="icon-btn" id="history-btn" title="İşlem Geçmişi">📜</button>
+        <button class="icon-btn" id="settings-btn" title="Ayarlar & PWA"><span class="status-dot" id="net-dot"></span>⚙️</button>
+      </div>
+    </div>
+
+    <!-- Ekran -->
+    <div class="display-container">
+      <div class="display-meta">
+        <div class="badge-group">
+          <span class="badge" id="mem-badge">M</span>
+          <span class="badge" id="digit-badge"></span>
+        </div>
+        <div id="history"></div>
+      </div>
+      <div class="display-row">
+        <input type="text" id="display" readonly placeholder="0">
+        <button class="copy-mini-btn" id="copy-btn" title="Sonucu Kopyala">📋</button>
+      </div>
+      <div id="live-preview"></div>
+    </div>
+
+    <!-- Hafıza & İleri Cebir Çubuğu -->
+    <div class="memory-bar" id="mem-bar">
+      <button data-mem="MC">MC</button>
+      <button data-mem="MR">MR</button>
+      <button data-mem="M+">M+</button>
+      <button data-mem="M-">M-</button>
+      <button data-val="gcd(">EBOB</button>
+      <button data-val="lcm(">EKOK</button>
+    </div>
+
+    <!-- 5 Sütunlu Ana Tuş Takımı -->
+    <div class="buttons" id="keypad">
+      <button class="sci" id="second-btn" data-fn="second">2nd</button>
+      <button class="sci" id="btn-sin" data-val="sin(">sin</button>
+      <button class="sci" id="btn-cos" data-val="cos(">cos</button>
+      <button class="sci" id="btn-tan" data-val="tan(">tan</button>
+      <button class="sci" data-val=";">;</button>
+
+      <button class="sci" id="btn-ln" data-val="ln(">ln</button>
+      <button class="sci" id="btn-log" data-val="log(">log</button>
+      <button class="sci" data-val="nPr(">nPr</button>
+      <button class="sci" data-val="nCr(">nCr</button>
+      <button class="sci" data-val="abs(">|x|</button>
+
+      <button class="sci" data-val="(">(</button>
+      <button class="sci" data-val=")">)</button>
+      <button class="sci" data-val="π">π</button>
+      <button class="sci" data-val="ℯ">ℯ</button>
+      <button class="sci" data-val="x">x</button>
+
+      <button class="sci" data-val="^">x^y</button>
+      <button class="action" data-fn="sq">x²</button>
+      <button class="action" id="btn-sqrt" data-fn="sqrt">√x</button>
+      <button class="action" data-fn="inv">1/x</button>
+      <button class="sci" data-val="!">x!</button>
+
+      <button data-val="7">7</button>
+      <button data-val="8">8</button>
+      <button data-val="9">9</button>
+      <button class="action" data-fn="del">⌫</button>
+      <button class="action" data-fn="clear">AC</button>
+
+      <button data-val="4">4</button>
+      <button data-val="5">5</button>
+      <button data-val="6">6</button>
+      <button class="operator" data-val="*">×</button>
+      <button class="operator" data-val="/">÷</button>
+
+      <button data-val="1">1</button>
+      <button data-val="2">2</button>
+      <button data-val="3">3</button>
+      <button class="operator" data-val="+">+</button>
+      <button class="operator" data-val="-">-</button>
+
+      <button class="action" data-fn="sign">±</button>
+      <button data-val="0">0</button>
+      <button data-val=".">.</button>
+      <button class="action" data-val="Ans">Ans</button>
+      <button class="equal" data-fn="calc">=</button>
+    </div>
+
+    <!-- 1. Bilimsel Sabitler Paneli -->
+    <div class="drawer" id="const-drawer">
+      <div class="drawer-header">
+        <span>🔬 Bilimsel Sabitler Kütüphanesi</span>
+        <button class="icon-btn" data-close="const-drawer">✖</button>
+      </div>
+      <div class="const-grid" id="const-grid">
+        <div class="const-card" data-c="299792458"><div class="const-name">Işık Hızı (c)</div><div class="const-val">299792458 m/s</div></div>
+        <div class="const-card" data-c="9.80665"><div class="const-name">Yerçekimi İvmesi (g)</div><div class="const-val">9,80665 m/s²</div></div>
+        <div class="const-card" data-c="1.6180339887"><div class="const-name">Altın Oran (φ)</div><div class="const-val">1,6180339887</div></div>
+        <div class="const-card" data-c="6.02214076E23"><div class="const-name">Avogadro (Nₐ)</div><div class="const-val">6,02214076E23</div></div>
+        <div class="const-card" data-c="6.67430E-11"><div class="const-name">Evrensel Çekim (G)</div><div class="const-val">6,67430E-11</div></div>
+        <div class="const-card" data-c="6.62607015E-34"><div class="const-name">Planck Sabiti (h)</div><div class="const-val">6,62607015E-34</div></div>
+        <div class="const-card" data-c="1.380649E-23"><div class="const-name">Boltzmann (k)</div><div class="const-val">1,380649E-23</div></div>
+        <div class="const-card" data-c="8.314462618"><div class="const-name">İdeal Gaz (R)</div><div class="const-val">8,314462618</div></div>
+      </div>
+    </div>
+
+    <!-- 2. Birim Dönüştürücü Paneli -->
+    <div class="drawer" id="unit-drawer">
+      <div class="drawer-header">
+        <span>🔄 Hızlı Birim Dönüştürücü</span>
+        <button class="icon-btn" data-close="unit-drawer">✖</button>
+      </div>
+      <div class="setting-row">
+        <span>Kategori</span>
+        <select id="unit-cat">
+          <option value="len">Uzunluk</option>
+          <option value="mass">Ağırlık</option>
+          <option value="temp">Sıcaklık</option>
+          <option value="speed">Hız</option>
+          <option value="data">Veri Boyutu</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Değer</span>
+        <input type="number" id="unit-input" value="1" style="width:140px;">
+      </div>
+      <div class="setting-row">
+        <span>Kaynak Birim</span>
+        <select id="unit-from"></select>
+      </div>
+      <div class="setting-row">
+        <span>Hedef Birim</span>
+        <select id="unit-to"></select>
+      </div>
+      <div class="base-box" id="unit-result-box">
+        <div class="base-label">Dönüşüm Sonucu (Ekrana Aktar ↵)</div>
+        <div class="base-val" id="unit-output">1</div>
+      </div>
+    </div>
+
+    <!-- 3. Programcı Taban Dönüştürücü Paneli -->
+    <div class="drawer" id="base-drawer">
+      <div class="drawer-header">
+        <span>💻 Taban Dönüştürücü (Programcı)</span>
+        <button class="icon-btn" data-close="base-drawer">✖</button>
+      </div>
+      <div class="base-box"><div class="base-label">DEC (10'luk Sistem)</div><div class="base-val" id="base-dec">0</div></div>
+      <div class="base-box"><div class="base-label">HEX (16'lık Sistem)</div><div class="base-val" id="base-hex">0x0</div></div>
+      <div class="base-box"><div class="base-label">BIN (2'lik Sistem)</div><div class="base-val" id="base-bin">0b0</div></div>
+      <div class="base-box"><div class="base-label">OCT (8'lik Sistem)</div><div class="base-val" id="base-oct">0o0</div></div>
+    </div>
+
+    <!-- 4. Canlı Fonksiyon Grafiği Paneli -->
+    <div class="drawer" id="graph-drawer">
+      <div class="drawer-header">
+        <span>📈 Fonksiyon Grafiği f(x)</span>
+        <button class="icon-btn" data-close="graph-drawer">✖</button>
+      </div>
+      <div class="setting-row">
+        <input type="text" id="graph-expr" placeholder="Örn: sin(x)*x veya x^2-4" style="flex:1;">
+        <button class="icon-btn" id="draw-graph-btn">Çiz</button>
+      </div>
+      <canvas id="graph-canvas" width="360" height="210"></canvas>
+      <div class="setting-row">
+        <span>X Ekseni Aralığı (±)</span>
+        <input type="range" id="graph-zoom" min="2" max="50" value="10">
+        <span id="graph-zoom-label">±10</span>
+      </div>
+    </div>
+
+    <!-- 5. İşlem Geçmişi Paneli -->
+    <div class="drawer" id="history-drawer">
+      <div class="drawer-header">
+        <span>📜 İşlem Geçmişi</span>
+        <div style="display:flex; gap:6px;">
+          <button class="icon-btn" id="export-history-btn">💾 İndir</button>
+          <button class="icon-btn" id="clear-history-btn">Temizle</button>
+          <button class="icon-btn" data-close="history-drawer">✖</button>
+        </div>
+      </div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+
+    <!-- 6. Özelleştirme, Ayarlar & PWA Yönetimi Paneli -->
+    <div class="drawer" id="settings-drawer">
+      <div class="drawer-header">
+        <span>⚙️ Özelleştirme & PWA Kurulumu</span>
+        <button class="icon-btn" data-close="settings-drawer">✖</button>
+      </div>
+
+      <!-- PWA Kurulum ve Paket İndirme Kutusu -->
+      <div class="pwa-box">
+        <div class="pwa-box-text">
+          <strong id="pwa-status-text">⚡ Çevrimdışı PWA Hazır</strong><br>
+          <span>Tam sunucu kurulumu için <code>sw.js</code> ve <code>manifest.json</code> dosyalarını indirebilirsin.</span>
+        </div>
+        <button class="icon-btn" id="download-pwa-files-btn" style="background:var(--accent);color:#fff;white-space:nowrap;">📦 PWA İndir</button>
+      </div>
+
+      <div class="setting-row">
+        <span>Tema Motoru</span>
+        <select id="theme-select">
+          <option value="dark">Gece Modu (Varsayılan)</option>
+          <option value="light">Gündüz Modu</option>
+          <option value="oled">OLED Tam Siyah</option>
+          <option value="cyberpunk">Cyberpunk Neon</option>
+          <option value="matrix">Matrix Terminal</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Vurgu Rengi</span>
+        <div class="color-swatches" id="swatches">
+          <div class="swatch active" data-color="#f97316" data-hover="#ea580c" style="background:#f97316"></div>
+          <div class="swatch" data-color="#3b82f6" data-hover="#2563eb" style="background:#3b82f6"></div>
+          <div class="swatch" data-color="#10b981" data-hover="#059669" style="background:#10b981"></div>
+          <div class="swatch" data-color="#8b5cf6" data-hover="#7c3aed" style="background:#8b5cf6"></div>
+          <div class="swatch" data-color="#ec4899" data-hover="#db2777" style="background:#ec4899"></div>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span>Tuş Şekli & Boyutu</span>
+        <select id="shape-select">
+          <option value="12px|44px">Modern (Standart)</option>
+          <option value="4px|40px">Keskin & Kompakt</option>
+          <option value="24px|48px">Tam Yuvarlak & Geniş</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Ekran Fontu</span>
+        <select id="font-select">
+          <option value="'Consolas', monospace">Mühendislik (Monospace)</option>
+          <option value="'Segoe UI', system-ui, sans-serif">Modern Sans-Serif</option>
+          <option value="'Georgia', serif">Akademik Serif</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Gösterilen İlk Basamak</span>
+        <select id="mantissa-select">
+          <option value="9">9 Basamak (1,23456789E...)</option>
+          <option value="11" selected>11 Basamak (1,2324242424E...)</option>
+          <option value="13">13 Basamak (1,234567890123E...)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Ondalık Ayırıcı</span>
+        <select id="sep-select">
+          <option value="," selected>Virgül (1,23242424E99999)</option>
+          <option value=".">Nokta (1.23242424E99999)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Tuş Sesi Efekti</span>
+        <select id="sound-select">
+          <option value="off">Kapalı</option>
+          <option value="mech" selected>Mekanik Switch</option>
+          <option value="soft">Yumuşak Dokunuş</option>
+          <option value="beep">Retro Bilimsel Bip</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Binlik Basamak Ayırıcı</span>
+        <input type="checkbox" id="thousand-toggle">
+      </div>
+      <div class="setting-row">
+        <span>Canlı Sonuç Önizleme</span>
+        <input type="checkbox" id="live-toggle" checked>
+      </div>
+      <div class="setting-row">
+        <span>Dokunsal Titreşim</span>
+        <input type="checkbox" id="haptic-toggle" checked>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. PWA MOTORU (Dinamik İkon, Manifest, Service Worker & Kurulum Yöneticisi)
+    // =========================================================================
+    let deferredInstallPrompt = null;
+
+    function generateAppIcon(size = 512) {
+      const c = document.createElement('canvas');
+      c.width = size;
+      c.height = size;
+      const ctx = c.getContext('2d');
+
+      // Arka Plan
+      ctx.fillStyle = '#1e212a';
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, size * 0.22);
+      ctx.fill();
+
+      // Üst Ekran Çerçevesi
+      ctx.fillStyle = '#272b36';
+      ctx.beginPath();
+      ctx.roundRect(size * 0.1, size * 0.1, size * 0.8, size * 0.28, size * 0.06);
+      ctx.fill();
+
+      // E-Notasyon Sembolü
+      ctx.fillStyle = '#f97316';
+      ctx.font = `bold ${size * 0.15}px Consolas, monospace`;
+      ctx.textAlign = 'right';
+      ctx.fillText('1,23E99', size * 0.84, size * 0.29);
+
+      // Alt 4 Sembol Butonu
+      const btnColors = ['#282c37', '#282c37', '#282c37', '#f97316'];
+      const labels = ['∑', 'π', 'x²', '='];
+      const positions = [
+        [0.1, 0.45], [0.52, 0.45],
+        [0.1, 0.69], [0.52, 0.69]
+      ];
+
+      positions.forEach(([px, py], i) => {
+        ctx.fillStyle = btnColors[i];
+        ctx.beginPath();
+        ctx.roundRect(size * px, size * py, size * 0.38, size * 0.19, size * 0.05);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${size * 0.12}px Segoe UI, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(labels[i], size * (px + 0.19), size * (py + 0.135));
+      });
+
+      return c.toDataURL('image/png');
+    }
+
+    const iconDataUrl = generateAppIcon(512);
+    document.getElementById('apple-icon').href = iconDataUrl;
+
+    const manifestObj = {
+      name: 'Ultimate Bilimsel Hesap Makinesi v6.0',
+      short_name: 'UltimateCalc',
+      description: 'Sınırsız E-Notasyonlu Bilimsel Hesap Makinesi',
+      start_url: './index.html',
+      display: 'standalone',
+      orientation: 'portrait',
+      background_color: '#12141a',
+      theme_color: '#1e212a',
+      icons: [
+        { src: iconDataUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+        { src: iconDataUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+      ]
+    };
+
+    const swCode = `
+const CACHE_NAME = 'ultimate-calc-v6-cache';
+const ASSETS = ['./', './index.html', './manifest.json'];
+
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+});
+
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
+      const clone = res.clone();
+      caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+      return res;
+    }).catch(() => caches.match('./index.html')))
+  );
+});`;
+
+    (function initPWA() {
+      // Dinamik Manifest Bağlama (Tek dosyada çalışırken bile manifest sağlar)
+      try {
+        const blob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+        document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+      } catch {}
+
+      // Service Worker Kaydı (HTTPS veya localhost üzerinde çalışırken aktifleşir)
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {
+          // Eğer harici sw.js dosyası yoksa Blob üzerinden kaydetmeyi dene
+          try {
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+          } catch {}
+        });
+      }
+
+      // Kurulum İsteğini Yakala (Android / Masaüstü Chrome & Edge)
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        document.getElementById('install-pwa-btn').style.display = 'flex';
+      });
+
+      document.getElementById('install-pwa-btn').addEventListener('click', async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        if (outcome === 'accepted') {
+          document.getElementById('install-pwa-btn').style.display = 'none';
+        }
+        deferredInstallPrompt = null;
+      });
+
+      // Çevrimiçi / Çevrimdışı Durum Takibi
+      function updateOnlineStatus() {
+        const dot = document.getElementById('net-dot');
+        const txt = document.getElementById('pwa-status-text');
+        if (navigator.onLine) {
+          dot.classList.remove('offline');
+          txt.innerText = '⚡ Çevrimiçi & Çevrimdışı Hazır';
+        } else {
+          dot.classList.add('offline');
+          txt.innerText = '📴 Çevrimdışı Modda Çalışıyor';
+        }
+      }
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+
+      // Ayarlardan sw.js ve manifest.json İndirme
+      document.getElementById('download-pwa-files-btn').addEventListener('click', () => {
+        const dl = (filename, content, mime) => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([content], { type: mime }));
+          a.download = filename;
+          a.click();
+        };
+        dl('manifest.json', JSON.stringify(manifestObj, null, 2), 'application/json');
+        setTimeout(() => dl('sw.js', swCode.trim(), 'application/javascript'), 250);
+      });
+    })();
+
+    // =========================================================================
+    // 2. HESAP MAKİNESİ DURUMU VE MATEMATİK MOTORU
+    // =========================================================================
+    const state = {
+      angleMode: 'deg',
+      theme: 'dark',
+      lastAnswer: 0,
+      memoryVal: 0,
+      mantissaDigits: 11,
+      decimalSep: ',',
+      thousandSep: false,
+      btnShape: '12px|44px',
+      displayFont: "'Consolas', monospace",
+      soundMode: 'mech',
+      livePreview: true,
+      haptic: true,
+      isSecond: false,
+      accent: '#f97316',
+      accentHover: '#ea580c',
+      historyLog: []
+    };
+
+    let currentBigState = null;
+    let audioCtx = null;
+
+    const display = document.getElementById('display');
+    const historyEl = document.getElementById('history');
+    const previewEl = document.getElementById('live-preview');
+    const digitBadge = document.getElementById('digit-badge');
+    const memBadge = document.getElementById('mem-badge');
+    const historyListEl = document.getElementById('history-list');
+
+    function playClickSound() {
+      if (state.soundMode === 'off') return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (state.soundMode === 'mech') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.035);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+          osc.start(now);
+          osc.stop(now + 0.035);
+        } else if (state.soundMode === 'soft') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(280, now);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+          osc.start(now);
+          osc.stop(now + 0.025);
+        } else if (state.soundMode === 'beep') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(880, now);
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+          osc.start(now);
+          osc.stop(now + 0.04);
+        }
+      } catch {}
+    }
+
+    class BigResult {
+      constructor(sign, log10Val) {
+        this.isBig = true;
+        this.sign = sign;
+        this.log10 = log10Val;
+      }
+
+      toNumber() {
+        if (this.sign === 0) return 0;
+        if (this.log10 > 308) return this.sign * Infinity;
+        if (this.log10 < -323) return 0;
+        return this.sign * Math.pow(10, this.log10);
+      }
+
+      format(mantissaTotalDigits = state.mantissaDigits, sep = state.decimalSep) {
+        if (this.sign === 0) return '0';
+        const prefix = this.sign < 0 ? '-' : '';
+
+        let exp = Math.floor(this.log10);
+        let frac = this.log10 - exp;
+        let mantissa = Math.pow(10, frac);
+
+        const decPlaces = Math.max(1, mantissaTotalDigits - 1);
+        if (Number(mantissa.toFixed(decPlaces)) >= 10) {
+          mantissa /= 10;
+          exp += 1;
+        }
+
+        let mantissaStr = mantissa.toFixed(decPlaces).replace(/\.?0+$/, '');
+        if (!mantissaStr.includes('.')) {
+          mantissaStr = mantissa.toFixed(decPlaces).replace(/0+$/, '').replace(/\.$/, '');
+        }
+        mantissaStr = mantissaStr.replace('.', sep);
+
+        const expStr = Math.abs(exp) >= 1e15 ? BigInt(Math.round(exp)).toString() : Math.round(exp).toString();
+        return `${prefix}${mantissaStr}E${expStr}`;
+      }
+    }
+
+    function toNum(v) {
+      return (v && v.isBig) ? v.toNumber() : Number(v);
+    }
+
+    function toLog10(v) {
+      if (v && v.isBig) return { sign: v.sign, log10: v.log10 };
+      const n = Number(v);
+      if (n === 0 || isNaN(n)) return { sign: 0, log10: -Infinity };
+      return { sign: Math.sign(n), log10: Math.log10(Math.abs(n)) };
+    }
+
+    function safePower(baseVal, expVal) {
+      const bLog = toLog10(baseVal);
+      const eNum = toNum(expVal);
+
+      if (bLog.sign === 0) {
+        if (eNum === 0) return 1;
+        if (eNum < 0) return new BigResult(1, 999999999);
+        return 0;
+      }
+      if (eNum === 0 || (bLog.sign === 1 && bLog.log10 === 0)) return 1;
+
+      let resultSign = 1;
+      if (bLog.sign < 0) {
+        resultSign = (isFinite(eNum) && Math.abs(eNum % 2) === 1) ? -1 : 1;
+      }
+
+      let totalLog10;
+      if (expVal && expVal.isBig) {
+        const clampedExp = expVal.sign * Math.pow(10, Math.min(expVal.log10, 20));
+        totalLog10 = clampedExp * bLog.log10;
+      } else {
+        totalLog10 = eNum * bLog.log10;
+      }
+
+      if (totalLog10 < state.mantissaDigits && totalLog10 > -9 && !(baseVal && baseVal.isBig)) {
+        const bNum = toNum(baseVal);
+        if (bNum >= 0 || Number.isInteger(eNum)) {
+          const exact = Math.pow(bNum, eNum);
+          if (isFinite(exact) && Math.abs(exact) < Math.pow(10, state.mantissaDigits)) {
+            return exact;
+          }
+        }
+      }
+      return new BigResult(resultSign, totalLog10);
+    }
+
+    function safeMul(a, b) {
+      const la = toLog10(a), lb = toLog10(b);
+      if (la.sign === 0 || lb.sign === 0) return 0;
+      const totalLog = la.log10 + lb.log10;
+      if (totalLog >= state.mantissaDigits || (a && a.isBig) || (b && b.isBig)) {
+        return new BigResult(la.sign * lb.sign, totalLog);
+      }
+      return toNum(a) * toNum(b);
+    }
+
+    function safeDiv(a, b) {
+      const la = toLog10(a), lb = toLog10(b);
+      if (lb.sign === 0) return new BigResult(1, 999999999);
+      if (la.sign === 0) return 0;
+      const totalLog = la.log10 - lb.log10;
+      if (totalLog >= state.mantissaDigits || (a && a.isBig) || (b && b.isBig)) {
+        return new BigResult(la.sign * lb.sign, totalLog);
+      }
+      return toNum(a) / toNum(b);
+    }
+
+    function safeAdd(a, b) {
+      if ((a && a.isBig) || (b && b.isBig)) {
+        const la = toLog10(a), lb = toLog10(b);
+        if (la.sign === 0) return b;
+        if (lb.sign === 0) return a;
+        if (Math.abs(la.log10 - lb.log10) > 15) {
+          return la.log10 >= lb.log10 ? new BigResult(la.sign, la.log10) : new BigResult(lb.sign, lb.log10);
+        }
+        const diff = lb.log10 - la.log10;
+        const comb = la.sign + lb.sign * Math.pow(10, diff);
+        if (comb === 0) return 0;
+        return new BigResult(Math.sign(comb), la.log10 + Math.log10(Math.abs(comb)));
+      }
+      const res = a + b;
+      if (Math.abs(res) >= Math.pow(10, state.mantissaDigits)) {
+        const l = toLog10(res);
+        return new BigResult(l.sign, l.log10);
+      }
+      return res;
+    }
+
+    function safeSub(a, b) {
+      if (b && b.isBig) return safeAdd(a, new BigResult(-b.sign, b.log10));
+      return safeAdd(a, -b);
+    }
+
+    function gcd(a, b) {
+      a = Math.abs(Math.round(toNum(a)));
+      b = Math.abs(Math.round(toNum(b)));
+      while (b) { let t = b; b = a % b; a = t; }
+      return a;
+    }
+
+    function lcm(a, b) {
+      const na = Math.abs(Math.round(toNum(a)));
+      const nb = Math.abs(Math.round(toNum(b)));
+      if (na === 0 || nb === 0) return 0;
+      return (na / gcd(na, nb)) * nb;
+    }
+
+    class MathParser {
+      constructor(expression, angleMode, lastAnswer, xValue = 0) {
+        this.angleMode = angleMode;
+        this.lastAnswer = lastAnswer || 0;
+        this.xValue = xValue;
+        this.expr = this.preprocess(expression);
+        this.pos = 0;
+      }
+
+      preprocess(str) {
+        let s = str.replace(/\s+/g, '');
+        if (state.decimalSep === ',') s = s.replace(/\./g, '').replace(/,/g, '.');
+        else s = s.replace(/,/g, '');
+
+        if (!s) return '';
+        s = s.replace(/[\+\-\*\/\^\(;]+$/, '');
+        if (!s) return '0';
+
+        let openParens = 0;
+        for (const ch of s) {
+          if (ch === '(') openParens++;
+          else if (ch === ')') openParens = Math.max(0, openParens - 1);
+        }
+        s += ')'.repeat(openParens);
+
+        s = s
+          .replace(/(\d|\)|!|%|π|ℯ|Ans|x)(?=\(|asin|acos|atan|sin|cos|tan|log|ln|abs|nPr|nCr|gcd|lcm|π|ℯ|Ans|x)/g, '$1*')
+          .replace(/(\)|!|%|π|ℯ|Ans|x)(?=\d)/g, '$1*');
+
+        return s;
+      }
+
+      peek() { return this.expr[this.pos]; }
+
+      consume(char) {
+        if (this.expr[this.pos] === char) { this.pos++; return true; }
+        return false;
+      }
+
+      toRadians(val) {
+        if (this.angleMode === 'deg') return (val * Math.PI) / 180;
+        if (this.angleMode === 'grad') return (val * Math.PI) / 200;
+        return val;
+      }
+
+      fromRadians(rad) {
+        if (this.angleMode === 'deg') return (rad * 180) / Math.PI;
+        if (this.angleMode === 'grad') return (rad * 200) / Math.PI;
+        return rad;
+      }
+
+      parseNumber() {
+        let numStr = '';
+        let dotCount = 0;
+        while (this.pos < this.expr.length && /[\d.]/.test(this.expr[this.pos])) {
+          if (this.expr[this.pos] === '.') dotCount++;
+          if (dotCount > 1) { this.pos++; continue; }
+          numStr += this.expr[this.pos++];
+        }
+
+        if (this.pos < this.expr.length && (this.expr[this.pos] === 'E' || this.expr[this.pos] === 'e')) {
+          this.pos++;
+          let expSign = 1;
+          if (this.expr[this.pos] === '+') this.pos++;
+          else if (this.expr[this.pos] === '-') { expSign = -1; this.pos++; }
+
+          let expStr = '';
+          while (this.pos < this.expr.length && /\d/.test(this.expr[this.pos])) {
+            expStr += this.expr[this.pos++];
+          }
+          const mantissa = parseFloat(numStr || '1');
+          const expVal = parseFloat(expStr || '0') * expSign;
+          const totalLog = Math.log10(Math.abs(mantissa)) + expVal;
+          return new BigResult(Math.sign(mantissa) || 1, totalLog);
+        }
+
+        if (!numStr.includes('.') && numStr.length > state.mantissaDigits) {
+          const head = parseFloat(numStr.slice(0, 15));
+          const headLen = Math.min(15, numStr.length);
+          const approxLog = (numStr.length - headLen) + Math.log10(head);
+          return new BigResult(1, approxLog);
+        }
+
+        const num = parseFloat(numStr);
+        return isNaN(num) ? 0 : num;
+      }
+
+      logFactorial(n) {
+        if (n <= 1) return 0;
+        if (n <= 170 && Number.isInteger(n)) {
+          let r = 0;
+          for (let i = 2; i <= n; i++) r += Math.log10(i);
+          return r;
+        }
+        return (n * Math.log(n) - n + 0.5 * Math.log(2 * Math.PI * n)) / Math.LN10;
+      }
+
+      factorial(val) {
+        const n = toNum(val);
+        if (n < 0) return 0;
+        if (n === 0 || n === 1) return 1;
+        if (n <= 14 && Number.isInteger(n)) {
+          let res = 1;
+          for (let i = 2; i <= n; i++) res *= i;
+          if (res < Math.pow(10, state.mantissaDigits)) return res;
+        }
+        return new BigResult(1, this.logFactorial(n));
+      }
+
+      parsePrimary() {
+        if (this.pos >= this.expr.length) return 0;
+
+        if (/[\d.]/.test(this.peek())) return this.parseNumber();
+        if (this.expr.startsWith('Ans', this.pos)) { this.pos += 3; return this.lastAnswer; }
+        if (this.consume('π')) return Math.PI;
+        if (this.consume('ℯ')) return Math.E;
+        if (this.consume('x')) return this.xValue;
+
+        for (const fn2 of ['nPr', 'nCr', 'gcd', 'lcm']) {
+          if (this.expr.startsWith(fn2, this.pos)) {
+            this.pos += fn2.length;
+            this.consume('(');
+            const a = this.parseExpression();
+            this.consume(';');
+            const b = this.parseExpression();
+            this.consume(')');
+
+            if (fn2 === 'gcd') return gcd(a, b);
+            if (fn2 === 'lcm') return lcm(a, b);
+
+            const na = Math.round(toNum(a)), nb = Math.round(toNum(b));
+            if (nb < 0 || na < nb) return 0;
+            let logRes = this.logFactorial(na) - this.logFactorial(na - nb);
+            if (fn2 === 'nCr') logRes -= this.logFactorial(nb);
+            if (logRes < state.mantissaDigits) return Math.round(Math.pow(10, logRes));
+            return new BigResult(1, logRes);
+          }
+        }
+
+        for (const fn of ['asin', 'acos', 'atan', 'sin', 'cos', 'tan', 'log', 'ln', 'abs']) {
+          if (this.expr.startsWith(fn, this.pos)) {
+            this.pos += fn.length;
+            this.consume('(');
+            const rawArg = this.parseExpression();
+            this.consume(')');
+
+            if (fn === 'abs') {
+              return (rawArg && rawArg.isBig) ? new BigResult(1, rawArg.log10) : Math.abs(toNum(rawArg));
+            }
+            if (fn === 'log') {
+              const l = toLog10(rawArg);
+              return l.sign <= 0 ? 0 : l.log10;
+            }
+            if (fn === 'ln') {
+              const l = toLog10(rawArg);
+              return l.sign <= 0 ? 0 : l.log10 * Math.LN10;
+            }
+
+            const arg = toNum(rawArg);
+            if (!isFinite(arg)) return 0;
+
+            if (fn === 'asin') return this.fromRadians(Math.asin(Math.max(-1, Math.min(1, arg))));
+            if (fn === 'acos') return this.fromRadians(Math.acos(Math.max(-1, Math.min(1, arg))));
+            if (fn === 'atan') return this.fromRadians(Math.atan(arg));
+
+            const rad = this.toRadians(arg);
+            if (fn === 'sin') return Math.abs(Math.sin(rad)) < 1e-15 ? 0 : Math.sin(rad);
+            if (fn === 'cos') return Math.abs(Math.cos(rad)) < 1e-15 ? 0 : Math.cos(rad);
+            if (fn === 'tan') {
+              if (Math.abs(Math.cos(rad)) < 1e-14) return new BigResult(1, 999999999);
+              return Math.tan(rad);
+            }
+          }
+        }
+
+        if (this.consume('(')) {
+          if (this.consume(')')) return 0;
+          const val = this.parseExpression();
+          this.consume(')');
+          return val;
+        }
+
+        this.pos++;
+        return 0;
+      }
+
+      parsePostfix() {
+        let val = this.parsePrimary();
+        while (true) {
+          if (this.consume('!')) val = this.factorial(val);
+          else if (this.consume('%')) val = safeDiv(val, 100);
+          else break;
+        }
+        return val;
+      }
+
+      parsePower() {
+        let base = this.parsePostfix();
+        if (this.consume('^')) {
+          const exp = this.parseSignedPower();
+          return safePower(base, exp);
+        }
+        return base;
+      }
+
+      parseSignedPower() {
+        if (this.consume('-')) {
+          const v = this.parseSignedPower();
+          return (v && v.isBig) ? new BigResult(-v.sign, v.log10) : -v;
+        }
+        if (this.consume('+')) return this.parseSignedPower();
+        return this.parsePower();
+      }
+
+      parseTerm() {
+        let left = this.parseSignedPower();
+        while (true) {
+          if (this.consume('*')) left = safeMul(left, this.parseSignedPower());
+          else if (this.consume('/')) left = safeDiv(left, this.parseSignedPower());
+          else break;
+        }
+        return left;
+      }
+
+      parseExpression() {
+        let left = this.parseTerm();
+        while (true) {
+          if (this.consume('+')) left = safeAdd(left, this.parseTerm());
+          else if (this.consume('-')) left = safeSub(left, this.parseTerm());
+          else break;
+        }
+        return left;
+      }
+
+      parse() {
+        if (!this.expr) return 0;
+        return this.parseExpression();
+      }
+    }
+
+    function formatResult(val) {
+      if (val && val.isBig) {
+        return val.format(state.mantissaDigits, state.decimalSep);
+      }
+
+      let num = Number(val);
+      if (isNaN(num)) return '0';
+      if (!isFinite(num)) {
+        return new BigResult(Math.sign(num) || 1, 309).format(state.mantissaDigits, state.decimalSep);
+      }
+      if (Math.abs(num) < 1e-12) num = 0;
+
+      const threshold = Math.pow(10, state.mantissaDigits);
+      if (Math.abs(num) >= threshold || (num !== 0 && Math.abs(num) < 1e-7)) {
+        const l = toLog10(num);
+        return new BigResult(l.sign, l.log10).format(state.mantissaDigits, state.decimalSep);
+      }
+
+      const decPlaces = Math.max(1, state.mantissaDigits - 1);
+      let str = Number(num.toFixed(decPlaces)).toString();
+
+      if (state.thousandSep && !str.includes('e')) {
+        const parts = str.split('.');
+        const tSep = state.decimalSep === ',' ? '.' : ',';
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, tSep);
+        return parts.join(state.decimalSep);
+      }
+
+      return str.replace('.', state.decimalSep);
+    }
+
+    function autoScaleFont() {
+      const len = display.value.length;
+      if (len > 22) display.style.fontSize = '1.25rem';
+      else if (len > 16) display.style.fontSize = '1.48rem';
+      else display.style.fontSize = '1.75rem';
+    }
+
+    function updateBadges(val) {
+      if (val && val.isBig && val.log10 >= 0) {
+        const totalDigits = Math.floor(val.log10) + 1;
+        digitBadge.style.display = 'inline-block';
+        digitBadge.innerText = `${totalDigits.toLocaleString('tr-TR')} Basamak`;
+      } else {
+        digitBadge.style.display = 'none';
+      }
+      const hasMem = (state.memoryVal && state.memoryVal.isBig) || Number(state.memoryVal) !== 0;
+      memBadge.style.display = hasMem ? 'inline-block' : 'none';
+    }
+
+    function feedback() {
+      if (state.haptic && navigator.vibrate) navigator.vibrate(15);
+      playClickSound();
+    }
+
+    function saveSettings() {
+      const toSave = { ...state, lastAnswer: 0, memoryVal: 0 };
+      try { localStorage.setItem('ult_calc_v60_pwa', JSON.stringify(toSave)); } catch {}
+    }
+
+    function loadSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('ult_calc_v60_pwa'));
+        if (saved) Object.assign(state, saved);
+      } catch {}
+      applyStateToUI();
+      initUnitConverter();
+    }
+
+    function applyStateToUI() {
+      document.body.className = state.theme === 'dark' ? '' : `theme-${state.theme}`;
+      const themeColors = { dark: '#1e212a', light: '#ffffff', oled: '#000000', cyberpunk: '#140826', matrix: '#06140b' };
+      document.getElementById('meta-theme-color').content = themeColors[state.theme] || '#1e212a';
+
+      document.getElementById('theme-select').value = state.theme;
+      document.getElementById('angle-btn').innerText = state.angleMode === 'deg' ? 'Deg' : (state.angleMode === 'rad' ? 'Rad' : 'Grad');
+      document.getElementById('mantissa-select').value = state.mantissaDigits;
+      document.getElementById('sep-select').value = state.decimalSep;
+      document.getElementById('shape-select').value = state.btnShape;
+      document.getElementById('font-select').value = state.displayFont;
+      document.getElementById('sound-select').value = state.soundMode;
+      document.getElementById('thousand-toggle').checked = state.thousandSep;
+      document.getElementById('live-toggle').checked = state.livePreview;
+      document.getElementById('haptic-toggle').checked = state.haptic;
+
+      const [radius, height] = state.btnShape.split('|');
+      document.documentElement.style.setProperty('--btn-radius', radius);
+      document.documentElement.style.setProperty('--btn-height', height);
+      document.documentElement.style.setProperty('--display-font', state.displayFont);
+      document.documentElement.style.setProperty('--accent', state.accent);
+      document.documentElement.style.setProperty('--accent-hover', state.accentHover);
+
+      document.querySelectorAll('.swatch').forEach(s => {
+        s.classList.toggle('active', s.dataset.color === state.accent);
+      });
+      renderHistory();
+    }
+
+    function updateLivePreview() {
+      autoScaleFont();
+      if (!state.livePreview || !display.value) {
+        previewEl.innerText = '';
+        return;
+      }
+      try {
+        const parser = new MathParser(display.value, state.angleMode, state.lastAnswer);
+        const res = parser.parse();
+        previewEl.innerText = '= ' + formatResult(res);
+      } catch {
+        previewEl.innerText = '';
+      }
+    }
+
+    function appendValue(value) {
+      currentBigState = null;
+
+      if (value === '.') {
+        const parts = display.value.split(/[\+\-\*\/\^\(\);]/);
+        if (parts[parts.length - 1].includes('.') || parts[parts.length - 1].includes(',')) return;
+        if (parts[parts.length - 1] === '') value = '0' + state.decimalSep;
+        else value = state.decimalSep;
+      }
+
+      if (/[\+\-\*\/\^]/.test(value)) {
+        const lastChar = display.value.slice(-1);
+        if (/[\+\-\*\/\^]/.test(lastChar)) {
+          if (value === '-' && /[\*\/\^]/.test(lastChar)) {
+            display.value += value;
+            return;
+          }
+          display.value = display.value.slice(0, -1) + value;
+          updateLivePreview();
+          return;
+        }
+        if (display.value === '' && value !== '-') return;
+        if (lastChar === '(' && value !== '-') return;
+      }
+
+      display.value += value;
+      display.scrollLeft = display.scrollWidth;
+      updateLivePreview();
+    }
+
+    function clearDisplay() {
+      display.value = '';
+      historyEl.innerText = '';
+      previewEl.innerText = '';
+      currentBigState = null;
+      updateBadges(null);
+      autoScaleFont();
+    }
+
+    function deleteLast() {
+      currentBigState = null;
+      const tokens = ['asin(', 'acos(', 'atan(', 'sin(', 'cos(', 'tan(', 'log(', 'ln(', 'nPr(', 'nCr(', 'gcd(', 'lcm(', 'abs(', 'Ans'];
+      for (const t of tokens) {
+        if (display.value.endsWith(t)) {
+          display.value = display.value.slice(0, -t.length);
+          updateLivePreview();
+          return;
+        }
+      }
+      display.value = display.value.slice(0, -1);
+      updateLivePreview();
+    }
+
+    function toggleSign() {
+      if (!display.value) return;
+      if (display.value.startsWith('-')) display.value = display.value.slice(1);
+      else display.value = '-' + display.value;
+      updateLivePreview();
+    }
+
+    function toggleSecondMode() {
+      state.isSecond = !state.isSecond;
+      document.getElementById('second-btn').classList.toggle('second-active', state.isSecond);
+      document.getElementById('btn-sin').innerText = state.isSecond ? 'asin' : 'sin';
+      document.getElementById('btn-sin').dataset.val = state.isSecond ? 'asin(' : 'sin(';
+      document.getElementById('btn-cos').innerText = state.isSecond ? 'acos' : 'cos';
+      document.getElementById('btn-cos').dataset.val = state.isSecond ? 'acos(' : 'cos(';
+      document.getElementById('btn-tan').innerText = state.isSecond ? 'atan' : 'tan';
+      document.getElementById('btn-tan').dataset.val = state.isSecond ? 'atan(' : 'tan(';
+      document.getElementById('btn-ln').innerText = state.isSecond ? 'e^x' : 'ln';
+      document.getElementById('btn-ln').dataset.val = state.isSecond ? 'ℯ^(' : 'ln(';
+      document.getElementById('btn-log').innerText = state.isSecond ? '10^x' : 'log';
+      document.getElementById('btn-log').dataset.val = state.isSecond ? '10^(' : 'log(';
+      document.getElementById('btn-sqrt').innerText = state.isSecond ? '∛x' : '√x';
+    }
+
+    function solveAndUpdate(transformFn, labelFn) {
+      if (!display.value) return;
+      try {
+        let baseVal;
+        let exprLabelText = display.value;
+
+        if (currentBigState !== null) {
+          baseVal = currentBigState;
+        } else {
+          const parser = new MathParser(display.value, state.angleMode, state.lastAnswer);
+          baseVal = parser.parse();
+        }
+
+        const rawResult = transformFn(baseVal);
+        const formatted = formatResult(rawResult);
+        const exprLabel = labelFn(exprLabelText);
+
+        historyEl.innerText = exprLabel + ' =';
+        state.lastAnswer = rawResult;
+        currentBigState = rawResult;
+
+        display.value = formatted;
+        previewEl.innerText = '';
+        updateBadges(rawResult);
+        autoScaleFont();
+
+        state.historyLog.unshift({ expr: exprLabel, res: formatted, note: '' });
+        if (state.historyLog.length > 30) state.historyLog.pop();
+        saveSettings();
+        renderHistory();
+      } catch (err) {
+        historyEl.innerText = err.message;
+      }
+    }
+
+    const actions = {
+      calc: () => {
+        currentBigState = null;
+        solveAndUpdate(v => v, expr => expr);
+      },
+      sqrt: () => {
+        if (state.isSecond) solveAndUpdate(v => safePower(v, 1 / 3), expr => `∛(${expr})`);
+        else solveAndUpdate(v => safePower(v, 0.5), expr => `√(${expr})`);
+      },
+      sq: () => solveAndUpdate(v => safePower(v, 2), expr => `(${expr})²`),
+      inv: () => solveAndUpdate(v => safeDiv(1, v), expr => `1/(${expr})`),
+      second: toggleSecondMode,
+      clear: clearDisplay,
+      del: deleteLast,
+      sign: toggleSign
+    };
+
+    document.getElementById('mem-bar').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      feedback();
+      if (btn.dataset.val) { appendValue(btn.dataset.val); return; }
+
+      const op = btn.dataset.mem;
+      if (op === 'MC') state.memoryVal = 0;
+      else if (op === 'MR') {
+        display.value = formatResult(state.memoryVal);
+        currentBigState = state.memoryVal;
+        updateLivePreview();
+      } else if (op === 'M+' || op === 'M-') {
+        const cur = currentBigState !== null ? currentBigState : new MathParser(display.value || '0', state.angleMode, state.lastAnswer).parse();
+        state.memoryVal = op === 'M+' ? safeAdd(state.memoryVal, cur) : safeSub(state.memoryVal, cur);
+      }
+      updateBadges(currentBigState);
+    });
+
+    const unitData = {
+      len: { m: 1, km: 1000, cm: 0.01, mm: 0.001, in: 0.0254, ft: 0.3048, mi: 1609.344 },
+      mass: { kg: 1, g: 0.001, mg: 1e-6, ton: 1000, lb: 0.45359237, oz: 0.0283495 },
+      speed: { 'm/s': 1, 'km/h': 1 / 3.6, mph: 0.44704, knot: 0.514444 },
+      data: { B: 1, KB: 1024, MB: 1048576, GB: 1073741824, TB: 1099511627776 }
+    };
+
+    function initUnitConverter() {
+      const cat = document.getElementById('unit-cat').value;
+      const fromEl = document.getElementById('unit-from');
+      const toEl = document.getElementById('unit-to');
+      const keys = cat === 'temp' ? ['°C', '°F', 'K'] : Object.keys(unitData[cat]);
+      fromEl.innerHTML = keys.map(k => `<option value="${k}">${k}</option>`).join('');
+      toEl.innerHTML = keys.map((k, i) => `<option value="${k}" ${i === 1 ? 'selected' : ''}>${k}</option>`).join('');
+      calcUnitConversion();
+    }
+
+    function calcUnitConversion() {
+      const cat = document.getElementById('unit-cat').value;
+      const val = parseFloat(document.getElementById('unit-input').value) || 0;
+      const from = document.getElementById('unit-from').value;
+      const to = document.getElementById('unit-to').value;
+      let res = 0;
+
+      if (cat === 'temp') {
+        let c = val;
+        if (from === '°F') c = (val - 32) * (5 / 9);
+        else if (from === 'K') c = val - 273.15;
+        if (to === '°C') res = c;
+        else if (to === '°F') res = c * (9 / 5) + 32;
+        else if (to === 'K') res = c + 273.15;
+      } else {
+        res = (val * unitData[cat][from]) / unitData[cat][to];
+      }
+      document.getElementById('unit-output').innerText = formatResult(res);
+    }
+
+    document.getElementById('unit-cat').addEventListener('change', initUnitConverter);
+    ['unit-input', 'unit-from', 'unit-to'].forEach(id => {
+      document.getElementById(id).addEventListener('input', calcUnitConversion);
+    });
+    document.getElementById('unit-result-box').addEventListener('click', () => {
+      display.value = document.getElementById('unit-output').innerText;
+      closeAllDrawers();
+    });
+
+    function updateBaseConverter() {
+      let n = 0n;
+      try {
+        const parsed = currentBigState !== null ? currentBigState : new MathParser(display.value || '0', state.angleMode, state.lastAnswer).parse();
+        const num = Math.trunc(toNum(parsed));
+        if (isFinite(num)) n = BigInt(num);
+      } catch {}
+      document.getElementById('base-dec').innerText = n.toString(10);
+      document.getElementById('base-hex').innerText = (n < 0n ? '-0x' : '0x') + (n < 0n ? -n : n).toString(16).toUpperCase();
+      document.getElementById('base-bin').innerText = (n < 0n ? '-0b' : '0b') + (n < 0n ? -n : n).toString(2);
+      document.getElementById('base-oct').innerText = (n < 0n ? '-0o' : '0o') + (n < 0n ? -n : n).toString(8);
+    }
+
+    function drawGraph() {
+      const canvas = document.getElementById('graph-canvas');
+      const ctx = canvas.getContext('2d');
+      const expr = document.getElementById('graph-expr').value || display.value || 'sin(x)';
+      const range = parseFloat(document.getElementById('graph-zoom').value) || 10;
+      document.getElementById('graph-zoom-label').innerText = `±${range}`;
+
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.strokeStyle = 'rgba(139, 146, 165, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, h / 2); ctx.lineTo(w, h / 2);
+      ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h);
+      ctx.stroke();
+
+      ctx.strokeStyle = state.accent;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      let started = false;
+
+      for (let px = 0; px <= w; px += 2) {
+        const x = ((px - w / 2) / (w / 2)) * range;
+        try {
+          const parser = new MathParser(expr, state.angleMode, state.lastAnswer, x);
+          const y = toNum(parser.parse());
+          if (isFinite(y)) {
+            const py = h / 2 - (y / range) * (h / 2);
+            if (py >= -h && py <= h * 2) {
+              if (!started) { ctx.moveTo(px, py); started = true; }
+              else ctx.lineTo(px, py);
+            } else started = false;
+          } else started = false;
+        } catch { started = false; }
+      }
+      ctx.stroke();
+    }
+
+    document.getElementById('draw-graph-btn').addEventListener('click', drawGraph);
+    document.getElementById('graph-zoom').addEventListener('input', drawGraph);
+
+    function renderHistory() {
+      if (state.historyLog.length === 0) {
+        historyListEl.innerHTML = '<div style="color:var(--text-muted);text-align:center;margin-top:30px;">Henüz işlem yok</div>';
+        return;
+      }
+      historyListEl.innerHTML = state.historyLog.map((item, idx) => `
+        <div class="history-item" data-idx="${idx}">
+          <div class="history-note" data-note-idx="${idx}">${item.note ? '📌 ' + item.note : '+ Not ekle'}</div>
+          <div class="history-expr">${item.expr} =</div>
+          <div class="history-res">${item.res}</div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('export-history-btn').addEventListener('click', () => {
+      if (!state.historyLog.length) return;
+      const lines = state.historyLog.map(i => `${i.note ? '[' + i.note + '] ' : ''}${i.expr} = ${i.res}`).join('\n');
+      const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'hesaplama_gecmisi.txt';
+      a.click();
+    });
+
+    function closeAllDrawers() {
+      document.querySelectorAll('.drawer').forEach(d => d.classList.remove('open'));
+      document.querySelectorAll('.top-bar .icon-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    function toggleDrawer(drawerId, btnId) {
+      const drawer = document.getElementById(drawerId);
+      const isOpen = drawer.classList.contains('open');
+      closeAllDrawers();
+      if (!isOpen) {
+        drawer.classList.add('open');
+        if (btnId) document.getElementById(btnId).classList.add('active');
+        if (drawerId === 'base-drawer') updateBaseConverter();
+        if (drawerId === 'graph-drawer') {
+          if (display.value.includes('x')) document.getElementById('graph-expr').value = display.value;
+          drawGraph();
+        }
+      }
+    }
+
+    document.getElementById('const-btn').addEventListener('click', () => toggleDrawer('const-drawer', 'const-btn'));
+    document.getElementById('unit-btn').addEventListener('click', () => toggleDrawer('unit-drawer', 'unit-btn'));
+    document.getElementById('base-btn').addEventListener('click', () => toggleDrawer('base-drawer', 'base-btn'));
+    document.getElementById('graph-btn').addEventListener('click', () => toggleDrawer('graph-drawer', 'graph-btn'));
+    document.getElementById('history-btn').addEventListener('click', () => toggleDrawer('history-drawer', 'history-btn'));
+    document.getElementById('settings-btn').addEventListener('click', () => toggleDrawer('settings-drawer', 'settings-btn'));
+
+    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeAllDrawers));
+
+    document.getElementById('const-grid').addEventListener('click', (e) => {
+      const card = e.target.closest('.const-card');
+      if (!card) return;
+      feedback();
+      appendValue(card.dataset.c);
+      closeAllDrawers();
+    });
+
+    document.getElementById('keypad').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      feedback();
+      if (btn.dataset.val) appendValue(btn.dataset.val);
+      else if (btn.dataset.fn && actions[btn.dataset.fn]) actions[btn.dataset.fn]();
+    });
+
+    document.getElementById('copy-btn').addEventListener('click', (e) => {
+      if (!display.value) return;
+      navigator.clipboard.writeText(display.value);
+      const btn = e.currentTarget;
+      btn.innerText = '✅';
+      setTimeout(() => btn.innerText = '📋', 1200);
+    });
+
+    document.getElementById('angle-btn').addEventListener('click', () => {
+      const modes = ['deg', 'rad', 'grad'];
+      state.angleMode = modes[(modes.indexOf(state.angleMode) + 1) % modes.length];
+      applyStateToUI();
+      updateLivePreview();
+      saveSettings();
+    });
+
+    document.getElementById('clear-history-btn').addEventListener('click', () => {
+      state.historyLog = [];
+      saveSettings();
+      renderHistory();
+    });
+
+    historyListEl.addEventListener('click', (e) => {
+      const noteBtn = e.target.closest('[data-note-idx]');
+      if (noteBtn) {
+        e.stopPropagation();
+        const idx = noteBtn.dataset.noteIdx;
+        const note = prompt('Bu işlem için etiket/not girin:', state.historyLog[idx].note || '');
+        if (note !== null) {
+          state.historyLog[idx].note = note.trim();
+          saveSettings();
+          renderHistory();
+        }
+        return;
+      }
+      const item = e.target.closest('.history-item');
+      if (!item) return;
+      const entry = state.historyLog[item.dataset.idx];
+      if (entry) {
+        display.value = entry.res;
+        historyEl.innerText = entry.expr + ' =';
+        currentBigState = null;
+        autoScaleFont();
+        closeAllDrawers();
+      }
+    });
+
+    document.getElementById('theme-select').addEventListener('change', (e) => {
+      state.theme = e.target.value;
+      applyStateToUI();
+      saveSettings();
+    });
+
+    document.getElementById('swatches').addEventListener('click', (e) => {
+      const swatch = e.target.closest('.swatch');
+      if (!swatch) return;
+      state.accent = swatch.dataset.color;
+      state.accentHover = swatch.dataset.hover;
+      applyStateToUI();
+      saveSettings();
+    });
+
+    document.getElementById('shape-select').addEventListener('change', (e) => {
+      state.btnShape = e.target.value;
+      applyStateToUI();
+      saveSettings();
+    });
+
+    document.getElementById('font-select').addEventListener('change', (e) => {
+      state.displayFont = e.target.value;
+      applyStateToUI();
+      saveSettings();
+    });
+
+    document.getElementById('mantissa-select').addEventListener('change', (e) => {
+      state.mantissaDigits = parseInt(e.target.value, 10);
+      if (currentBigState) display.value = formatResult(currentBigState);
+      updateLivePreview();
+      saveSettings();
+    });
+
+    document.getElementById('sep-select').addEventListener('change', (e) => {
+      state.decimalSep = e.target.value;
+      if (currentBigState) display.value = formatResult(currentBigState);
+      updateLivePreview();
+      saveSettings();
+    });
+
+    document.getElementById('sound-select').addEventListener('change', (e) => {
+      state.soundMode = e.target.value;
+      playClickSound();
+      saveSettings();
+    });
+
+    document.getElementById('thousand-toggle').addEventListener('change', (e) => {
+      state.thousandSep = e.target.checked;
+      if (currentBigState) display.value = formatResult(currentBigState);
+      updateLivePreview();
+      saveSettings();
+    });
+
+    document.getElementById('live-toggle').addEventListener('change', (e) => {
+      state.livePreview = e.target.checked;
+      updateLivePreview();
+      saveSettings();
+    });
+
+    document.getElementById('haptic-toggle').addEventListener('change', (e) => {
+      state.haptic = e.target.checked;
+      saveSettings();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT' && document.activeElement.id !== 'display') return;
+      if (e.ctrlKey || e.metaKey) return;
+      const k = e.key;
+      if (/[0-9.()\+\-\*\/\^%!Ex;]/.test(k)) { e.preventDefault(); feedback(); appendValue(k); }
+      else if (k === ',') { e.preventDefault(); feedback(); appendValue('.'); }
+      else if (k === 's') { feedback(); appendValue('sin('); }
+      else if (k === 'c') { feedback(); appendValue('cos('); }
+      else if (k === 't') { feedback(); appendValue('tan('); }
+      else if (k === 'l') { feedback(); appendValue('log('); }
+      else if (k === 'n') { feedback(); appendValue('ln('); }
+      else if (k === 'p') { feedback(); appendValue('π'); }
+      else if (k === 'e') { feedback(); appendValue('ℯ'); }
+      else if (k === 'a' || k === 'A') { feedback(); appendValue('Ans'); }
+      else if (k === 'r') { feedback(); actions.sqrt(); }
+      else if (k === 'Enter' || k === '=') { e.preventDefault(); feedback(); actions.calc(); }
+      else if (k === 'Backspace') { e.preventDefault(); feedback(); deleteLast(); }
+      else if (k === 'Escape') {
+        e.preventDefault();
+        const anyOpen = document.querySelector('.drawer.open');
+        if (anyOpen) closeAllDrawers();
+        else clearDisplay();
+      }
+    });
+
+    loadSettings();
+  </script>
+</body>
+</html>
